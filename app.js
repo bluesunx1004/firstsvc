@@ -5,7 +5,6 @@
 ================================ */
 
 (() => {
-  // ===== DOM =====
   const $ = (sel) => document.querySelector(sel);
 
   const form = $("#searchForm");
@@ -20,14 +19,12 @@
   const resultBox = $("#resultBox");
   const accountIdEl = $("#accountId");
 
-  // ✅ 1단계에서 얻은 Apps Script 웹앱 URL을 여기에 붙여넣기
-  // 예: https://script.google.com/macros/s/AKfycbxxxxxxx/exec
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD96ndYMF3Aj2oxeBc7_Q3TGL9dpBE-_QDYHChWuZDMKMlRNA3Gq707kSwfUqk03Oocg/exec";
+  // ✅ 너의 Apps Script 웹앱 URL
+  const WEB_APP_URL =
+    "https://script.google.com/macros/s/AKfycbwD96ndYMF3Aj2oxeBc7_Q3TGL9dpBE-_QDYHChWuZDMKMlRNA3Gq707kSwfUqk03Oocg/exec";
 
-  // (디버그) app.js가 제대로 로드되는지 확인
   console.log("app.js 로드됨 ✅");
 
-  // ===== 유틸 =====
   const normalizeStudentNo = (v) => (v ?? "").toString().trim().replace(/\s+/g, "");
   const normalizeName = (v) => (v ?? "").toString().trim().replace(/\s+/g, "");
 
@@ -48,7 +45,8 @@
 
   // ===== API 호출 =====
   async function fetchAccountId(studentNo, name) {
-    if (!WEB_APP_URL || WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbwD96ndYMF3Aj2oxeBc7_Q3TGL9dpBE-_QDYHChWuZDMKMlRNA3Gq707kSwfUqk03Oocg/exec")) {
+    // ✅ URL이 비어있거나 이상한 경우만 막기
+    if (!WEB_APP_URL || !/^https:\/\/script\.google\.com\/macros\/s\//.test(WEB_APP_URL)) {
       throw new Error("WEB_APP_URL_NOT_SET");
     }
 
@@ -59,24 +57,22 @@
     const res = await fetch(url, { method: "GET" });
     if (!res.ok) throw new Error("NETWORK_ERROR");
 
-    return await res.json(); // { ok:true, id:"..." } or { ok:false, error:"..." }
+    return await res.json();
   }
 
-  // ===== 이벤트: 검색(버튼/엔터) =====
+  // ===== 검색(버튼/엔터) =====
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const studentNo = normalizeStudentNo(studentNoInput.value);
     const name = normalizeName(studentNameInput.value);
 
-    // 기본 검증
     if (!studentNo || !name) {
       hideResult();
       setStatus("error", "학번과 이름을 모두 입력해줘!");
       return;
     }
 
-    // 학번 형식(숫자만 권장)
     if (!/^\d{3,10}$/.test(studentNo)) {
       hideResult();
       setStatus("error", "학번은 숫자만 입력해줘! (예: 20301)");
@@ -98,12 +94,6 @@
           hideResult();
           if (data.error === "NOT_FOUND") {
             setStatus("error", "일치하는 정보가 없어. 학번/이름을 다시 확인해줘!");
-          } else if (data.error === "MISSING_PARAMS") {
-            setStatus("error", "서버에 전달된 값이 비어 있어. 입력을 확인해줘!");
-          } else if (data.error === "SHEET_NOT_FOUND") {
-            setStatus("error", "서버 시트명을 못 찾았어. (Apps Script sheetName 확인)");
-          } else if (data.error === "EMPTY_DB") {
-            setStatus("error", "DB 시트에 데이터가 없어. (2행부터 데이터 필요)");
           } else {
             setStatus("error", `조회 실패: ${data.error}`);
           }
@@ -124,15 +114,15 @@
         const msg = String(err?.message || err || "");
 
         if (msg === "WEB_APP_URL_NOT_SET") {
-          setStatus("error", "WEB_APP_URL에 Apps Script 웹앱 URL을 먼저 넣어줘!");
+          setStatus("error", "WEB_APP_URL이 비어있거나 형식이 이상해. URL을 확인해줘!");
           return;
         }
 
-        setStatus("error", "네트워크 오류! 웹앱 URL/배포 권한/CORS 환경을 확인해줘!");
+        setStatus("error", "네트워크 오류! 웹앱 URL/배포 권한을 확인해줘!");
       });
   });
 
-  // ===== 이벤트: 지우기 =====
+  // ===== 지우기 =====
   btnClear.addEventListener("click", () => {
     studentNoInput.value = "";
     studentNameInput.value = "";
@@ -141,7 +131,7 @@
     studentNoInput.focus();
   });
 
-  // ===== 이벤트: ID 복사 =====
+  // ===== ID 복사 =====
   btnCopyId.addEventListener("click", async () => {
     const id = accountIdEl.textContent.trim();
     if (!id || id === "-") return;
@@ -160,7 +150,7 @@
     }
   });
 
-  // ===== 이벤트: 비밀번호 초기화 요청(데모) =====
+  // ===== 비밀번호 초기화 요청(데모) =====
   btnResetPw.addEventListener("click", () => {
     const studentNo = normalizeStudentNo(studentNoInput.value);
     const name = normalizeName(studentNameInput.value);
@@ -172,7 +162,6 @@
     }
 
     setStatus("success", `비밀번호 초기화 요청 안내! (대상: ${name} / ${studentNo}) 🔐`);
-
     alert(
       [
         "비밀번호는 화면에 표시하지 않습니다.",

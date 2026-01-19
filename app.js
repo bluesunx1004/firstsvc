@@ -22,7 +22,7 @@
 
   // ✅ 1단계에서 얻은 Apps Script 웹앱 URL을 여기에 붙여넣기
   // 예: https://script.google.com/macros/s/AKfycbxxxxxxx/exec
-  const WEB_APP_URL = "여기에_네_웹앱_URL";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD96ndYMF3Aj2oxeBc7_Q3TGL9dpBE-_QDYHChWuZDMKMlRNA3Gq707kSwfUqk03Oocg/exec";
 
   // (디버그) app.js가 제대로 로드되는지 확인
   console.log("app.js 로드됨 ✅");

@@ -1,6 +1,6 @@
 /* ===============================
-   우리학교 구글 계정 검색 - app.js
-   - 학번+이름 검색 -> ID 표시
+   우리학교 구글 계정 검색 - app.js (Google Sheets 연동 버전)
+   - 학번+이름 검색 -> Apps Script Web App 호출 -> 계정 ID 표시
    - PW는 표시하지 않음(초기화 요청 버튼만)
 ================================ */
 
@@ -20,14 +20,9 @@
   const resultBox = $("#resultBox");
   const accountIdEl = $("#accountId");
 
-  // ===== 예시 데이터(테스트용) =====
-  // 실제 운영에서는 여기 대신 Apps Script/API에서 조회하게 바꿀 예정
-  // key = "학번|이름"
-  const ACCOUNT_DB = new Map([
-    ["20301|홍길동", { id: "s20301@school.edu" }],
-    ["20302|김철수", { id: "s20302@school.edu" }],
-    ["10115|이영희", { id: "s10115@school.edu" }],
-  ]);
+  // ✅ 너의 Apps Script 웹앱 URL로 교체!
+  // 예: https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxx/exec
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxyG3LBZXoVz-2Px_0sZyR5DyHwogSPpxeEI-RwWRnXJPhKIzEmCEqxpzwKrvRJXy7aig/exec";
 
   // ===== 유틸 =====
   const normalizeStudentNo = (v) => (v ?? "").toString().trim().replace(/\s+/g, "");
@@ -48,9 +43,25 @@
     accountIdEl.textContent = "-";
   };
 
-  const makeKey = (studentNo, name) => `${studentNo}|${name}`;
+  // ===== 서버 호출 =====
+  async function fetchAccountId(studentNo, name) {
+    if (!WEB_APP_URL || WEB_APP_URL.includes("여기에_웹앱_URL")) {
+      throw new Error("WEB_APP_URL_NOT_SET");
+    }
 
-  // ===== 이벤트: 검색 =====
+    const url =
+      `${WEB_APP_URL}?studentNo=${encodeURIComponent(studentNo)}` +
+      `&name=${encodeURIComponent(name)}`;
+
+    const res = await fetch(url, { method: "GET" });
+    if (!res.ok) throw new Error("NETWORK_ERROR");
+
+    // Apps Script가 JSON을 반환한다고 가정
+    // { ok: true, id: "..." } or { ok:false, error:"..." }
+    return await res.json();
+  }
+
+  // ===== 이벤트: 검색(버튼/엔터) =====
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -64,30 +75,60 @@
       return;
     }
 
-    // 학번 형식(너무 빡세지 않게 숫자만 권장)
+    // 학번 형식(숫자만 권장)
     if (!/^\d{3,10}$/.test(studentNo)) {
       hideResult();
       setStatus("error", "학번은 숫자만 입력해줘! (예: 20301)");
       return;
     }
 
-    // 로딩 느낌(실제 API 연동 시 여기서 fetch)
     hideResult();
     setStatus("idle", "찾는 중... 🔎");
 
-    setTimeout(() => {
-      const key = makeKey(studentNo, name);
-      const row = ACCOUNT_DB.get(key);
+    fetchAccountId(studentNo, name)
+      .then((data) => {
+        if (!data || typeof data !== "object") {
+          hideResult();
+          setStatus("error", "서버 응답 형식이 이상해. (JSON 확인 필요)");
+          return;
+        }
 
-      if (!row) {
+        if (!data.ok) {
+          hideResult();
+          if (data.error === "NOT_FOUND") {
+            setStatus("error", "일치하는 정보가 없어. 학번/이름을 다시 확인해줘!");
+          } else if (data.error === "MISSING_PARAMS") {
+            setStatus("error", "서버에 전달된 값이 비어 있어. 입력을 확인해줘!");
+          } else if (data.error === "SHEET_NOT_FOUND") {
+            setStatus("error", "서버 시트명을 못 찾았어. (Apps Script sheetName 확인)");
+          } else if (data.error === "EMPTY_DB") {
+            setStatus("error", "DB 시트에 데이터가 없어. (2행부터 데이터 필요)");
+          } else {
+            setStatus("error", `조회 실패: ${data.error}`);
+          }
+          return;
+        }
+
+        if (!data.id) {
+          hideResult();
+          setStatus("error", "ID 값이 비어 있어. (시트의 계정ID 열 확인)");
+          return;
+        }
+
+        setStatus("success", "찾았다! 아래에서 계정 ID 확인해줘 😊");
+        showResult(data.id);
+      })
+      .catch((err) => {
         hideResult();
-        setStatus("error", "일치하는 정보가 없어. 학번/이름을 다시 확인해줘!");
-        return;
-      }
 
-      setStatus("success", "찾았다! 아래에서 계정 ID 확인해줘 😊");
-      showResult(row.id);
-    }, 250);
+        const msg = String(err?.message || err || "");
+        if (msg === "WEB_APP_URL_NOT_SET") {
+          setStatus("error", "WEB_APP_URL에 Apps Script 웹앱 URL을 먼저 넣어줘!");
+          return;
+        }
+
+        setStatus("error", "네트워크 오류가 발생했어. 웹앱 URL/배포 권한을 확인해줘!");
+      });
   });
 
   // ===== 이벤트: 지우기 =====
@@ -120,7 +161,8 @@
   });
 
   // ===== 이벤트: 비밀번호 초기화 요청 =====
-  // 실제 운영에서는 여기서 "관리자 승인/본인확인" 후 초기화 링크 발급 흐름으로 연결
+  // 실제 운영에서는 여기서 서버/Apps Script로 요청을 보내서
+  // "요청 로그 기록" + "관리자 승인/본인확인" 후 초기화 링크 발급 흐름을 권장
   btnResetPw.addEventListener("click", () => {
     const studentNo = normalizeStudentNo(studentNoInput.value);
     const name = normalizeName(studentNameInput.value);
@@ -131,11 +173,7 @@
       return;
     }
 
-    // 데모용: 실제로는 서버/Apps Script로 요청 보내기
-    setStatus(
-      "success",
-      `비밀번호 초기화 요청이 접수됐어! (대상: ${name} / ${studentNo}) 🔐`
-    );
+    setStatus("success", `비밀번호 초기화 요청이 접수됐어! (대상: ${name} / ${studentNo}) 🔐`);
 
     alert(
       [

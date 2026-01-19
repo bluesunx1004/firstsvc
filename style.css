@@ -1,0 +1,235 @@
+/* ===============================
+   기본 리셋 & 공통 설정
+================================ */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  background: linear-gradient(135deg, #fdf1ff, #eef6ff);
+  color: #333;
+}
+
+/* ===============================
+   전체 레이아웃
+================================ */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+}
+
+.app__header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.app__title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.app__desc {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* ===============================
+   카드 영역
+================================ */
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px 22px 28px;
+  box-shadow:
+    0 10px 25px rgba(120, 120, 200, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ===============================
+   폼
+================================ */
+.form__row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.form__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.form__input {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 2px solid #e6e6f0;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form__input:focus {
+  outline: none;
+  border-color: #a5b4ff;
+  box-shadow: 0 0 0 4px rgba(165, 180, 255, 0.25);
+}
+
+.form__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ===============================
+   버튼
+================================ */
+.btn {
+  flex: 1;
+  height: 42px;
+  border-radius: 14px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: #f1f1f7;
+  color: #444;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #9aa8ff, #7b8cff);
+  color: #fff;
+}
+
+.btn--danger {
+  background: linear-gradient(135deg, #ff9a9a, #ff6f6f);
+  color: #fff;
+}
+
+.btn--small {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 0.75rem;
+  border-radius: 10px;
+  flex: none;
+}
+
+/* ===============================
+   힌트 & 보조 텍스트
+================================ */
+.hint {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #888;
+  text-align: center;
+}
+
+.muted {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+/* ===============================
+   결과 영역
+================================ */
+.result {
+  margin-top: 24px;
+}
+
+.result__title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* 상태 메시지 */
+.status {
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.status--idle {
+  background: #f6f7fb;
+  color: #666;
+}
+
+.status--error {
+  background: #ffecec;
+  color: #c0392b;
+}
+
+.status--success {
+  background: #eef8f1;
+  color: #2e7d32;
+}
+
+/* 결과 박스 */
+.result__box {
+  margin-top: 10px;
+  background: #fafaff;
+  border-radius: 16px;
+  padding: 16px;
+  border: 2px dashed #d8ddff;
+}
+
+.result__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.result__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.result__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result__divider {
+  height: 1px;
+  background: #e5e7f5;
+  margin: 12px 0;
+}
+
+.result__note {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #777;
+  line-height: 1.4;
+}
+
+/* ===============================
+   푸터
+================================ */
+.app__footer {
+  margin-top: auto;
+  padding-top: 24px;
+  font-size: 0.7rem;
+  color: #aaa;
+}

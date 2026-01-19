@@ -1,4 +1,4 @@
-(() => {
+(() => {console.log("app.js 로드됨 ✅");
   // ===== DOM =====
   const $ = (sel) => document.querySelector(sel);
 

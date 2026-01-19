@@ -48,7 +48,7 @@
 
   // ===== API 호출 =====
   async function fetchAccountId(studentNo, name) {
-    if (!WEB_APP_URL || WEB_APP_URL.includes("여기에_네_웹앱_URL")) {
+    if (!WEB_APP_URL || WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbwD96ndYMF3Aj2oxeBc7_Q3TGL9dpBE-_QDYHChWuZDMKMlRNA3Gq707kSwfUqk03Oocg/exec")) {
       throw new Error("WEB_APP_URL_NOT_SET");
     }
 
